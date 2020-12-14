@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { View, TextInput, Text, Button, StyleSheet, ActivityIndicator } from "react-native";
+import React, { Component, useRef } from "react";
+import { Animated, View, TextInput, Text, Button, StyleSheet, ActivityIndicator } from "react-native";
 
 import * as firebase from 'firebase';
 import 'firebase/firestore';
@@ -12,8 +12,22 @@ export default class DetailsScreen extends Component{
         this.state = {
             loading: false,
             codeValue: props.route.params.item != undefined ? 
-            props.route.params.item.data : ''
+            props.route.params.item.data : '',
         }
+    }
+
+    fade = new Animated.Value(0)
+
+    _fadeIn = () => {
+        Animated.timing(this.fade, {
+            toValue: 1,
+            duration: 3000,
+            useNativeDriver: false
+        }).start()
+    }
+
+    componentDidMount(){
+        this._fadeIn()
     }
 
     render(){
@@ -75,18 +89,22 @@ export default class DetailsScreen extends Component{
                         })
                     })
                 }} />
-                <Button title="Delete" onPress={() => {
-                    this.setState({
-                        loading: true
-                    })
-
-                    dbh.collection('scans').doc(itemData.item.id).delete().then(() => 
-                    this.props.navigation.popToTop()).catch(e => {
+                <Animated.View style={{
+                    opacity: this.fade
+                }}>
+                    <Button color="red" title="Delete" onPress={() => {
                         this.setState({
-                            loading: false
+                            loading: true
                         })
-                    })
-                }} />
+
+                        dbh.collection('scans').doc(itemData.item.id).delete().then(() => 
+                        this.props.navigation.popToTop()).catch(e => {
+                            this.setState({
+                                loading: false
+                            })
+                        })
+                    }} />
+                </Animated.View>
             </View>
         )
     }
